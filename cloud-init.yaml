@@ -36,9 +36,15 @@ write_files:
   path: /opt/containerd.sh
   permissions: "0755"
 - content: |
-    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-        SystemdCgroup = true
+    version = 2
+    [plugins]
+      [plugins."io.containerd.grpc.v1.cri"]
+        [plugins."io.containerd.grpc.v1.cri".containerd]
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+              runtime_type = "io.containerd.runc.v2"
+              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                SystemdCgroup = true
   path: /etc/containerd/config.toml
 - content: |
     #!/bin/sh
