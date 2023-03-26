@@ -55,8 +55,12 @@ make clean
 
 The Makefile provides several variables that can be customized:
 
-- `MASTER_INSTANCE` and `WORKER_INSTANCE`: Names to be given to the master and worker instances.
-- `KUBERNETES_VERSION`: Version of Kubernetes to install on the instances. This variable is used to set the version of the `kubelet`, `kubeadm`, and `kubectl` packages.
+| Env Variable | Description | Default Value |
+| - | - | - |
+| MASTER_INSTANCE | Name of the master instance | master |
+| WORKER_INSTANCE | Name of the worker instance | worker |
+| INSTANCE_NAME_PREFIX | Prefix to be used for the instance names | kubernetes- |
+| KUBERNETES_VERSION | Version of Kubernetes to install | 1.26.3-00 |
 
 These variables can be overridden by setting them in the shell or by editing the Makefile directly.
 
