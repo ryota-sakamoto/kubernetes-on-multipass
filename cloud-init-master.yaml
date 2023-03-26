@@ -123,10 +123,10 @@ write_files:
     sudo KUBECONFIG=/etc/kubernetes/admin.conf kubectl certificate approve admin
     sudo KUBECONFIG=/etc/kubernetes/admin.conf kubectl get csr admin -o json | jq -r .status.certificate | base64 --decode > admin.crt
 
-    kubectl config set-cluster kubenertes --certificate-authority=/etc/kubernetes/pki/ca.crt --embed-certs --server=https://localhost:6443
+    kubectl config set-cluster kubernetes --certificate-authority=/etc/kubernetes/pki/ca.crt --embed-certs --server=https://localhost:6443
     kubectl config set-credentials admin --client-certificate=admin.crt --client-key=admin.pem --embed-certs=true
-    kubectl config set-context kubenertes --cluster=kubenertes --user=admin
-    kubectl config use-context kubenertes
+    kubectl config set-context kubernetes --cluster=kubernetes --user=admin
+    kubectl config use-context kubernetes
   path: /opt/csr.sh
   permissions: "0755"
 - content: |

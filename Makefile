@@ -1,29 +1,38 @@
+MASTER_INSTANCE := master
+WORKER_INSTANCE := worker
+
 error:
 	exit 1
 
-master:
-	multipass launch 22.04 --name master -c 2 -m 1G -d 10G --cloud-init cloud-init-master.yaml
+create-cluster: create-master create-worker generate-kubeconfig join-worker install-cni
 
-worker:
-	multipass launch 22.04 --name worker -c 2 -m 1G -d 10G --cloud-init cloud-init-worker.yaml
+create-master:
+	multipass launch 22.04 --name $(MASTER_INSTANCE) -c 2 -m 1G -d 10G --cloud-init cloud-init-master.yaml
 
-join:
-	$(eval JOIN_COMMAND := $(shell multipass exec master -- sudo kubeadm token create --print-join-command))
-	multipass exec worker -- sudo $(JOIN_COMMAND)
+create-worker:
+	multipass launch 22.04 --name $(WORKER_INSTANCE) -c 2 -m 1G -d 10G --cloud-init cloud-init-worker.yaml
 
-shell:
-	multipass shell master
+join-worker:
+	$(eval JOIN_COMMAND := $(shell multipass exec $(MASTER_INSTANCE) -- sudo kubeadm token create --print-join-command))
+	multipass exec $(WORKER_INSTANCE) -- sudo $(JOIN_COMMAND)
 
-kubeconfig:
-	multipass exec master -- /opt/csr.sh
-	multipass transfer master:/home/ubuntu/.kube/config .
+shell-master:
+	multipass shell $(MASTER_INSTANCE)
+
+generate-kubeconfig:
+	multipass exec $(MASTER_INSTANCE) -- /opt/csr.sh
+	multipass transfer $(MASTER_INSTANCE):/home/ubuntu/.kube/config .
 	KUBECONFIG=config:~/.kube/config kubectl config view --flatten > ~/.kube/config
 	rm config
 
-	$(eval IP := $(shell multipass info master --format json | jq -r .info.master.ipv4[0]))
-	kubectl config set-cluster kubenertes --server=https://$(IP):6443
+	$(eval IP := $(shell multipass info $(MASTER_INSTANCE) --format json | jq -r .info.master.ipv4[0]))
+	kubectl config set-cluster kubernetes --server=https://$(IP):6443
+
+install-cni:
+	helm repo add cilium https://helm.cilium.io/
+	helm install cilium cilium/cilium --version 1.13.1 --namespace kube-system --set ipam.mode=kubernetes
 
 clean:
-	multipass delete worker
-	multipass delete master
+	multipass delete $(WORKER_INSTANCE)
+	multipass delete $(MASTER_INSTANCE)
 	multipass purge
