@@ -2,7 +2,14 @@ error:
 	exit 1
 
 master:
-	multipass launch 22.04 --name master -c 2 -m 2G -d 10G --cloud-init cloud-init.yaml
+	multipass launch 22.04 --name master -c 2 -m 1G -d 10G --cloud-init cloud-init-master.yaml
+
+worker:
+	multipass launch 22.04 --name worker -c 2 -m 1G -d 10G --cloud-init cloud-init-worker.yaml
+
+join:
+	$(eval JOIN_COMMAND := $(shell multipass exec master -- sudo kubeadm token create --print-join-command))
+	multipass exec worker -- sudo $(JOIN_COMMAND)
 
 shell:
 	multipass shell master
@@ -17,5 +24,6 @@ kubeconfig:
 	kubectl config set-cluster kubenertes --server=https://$(IP):6443
 
 clean:
+	multipass delete worker
 	multipass delete master
 	multipass purge
