@@ -6,9 +6,9 @@ packages:
   - ca-certificates
   - curl
   - jq
-  - [kubelet, 1.26.3-00]
-  - [kubeadm, 1.26.3-00]
-  - [kubectl, 1.26.3-00]
+  - [kubelet, __KUBERNETES_VERSION__]
+  - [kubeadm, __KUBERNETES_VERSION__]
+  - [kubectl, __KUBERNETES_VERSION__]
 
 apt:
   sources:

@@ -1,16 +1,18 @@
 MASTER_INSTANCE := master
 WORKER_INSTANCE := worker
 
+KUBERNETES_VERSION := 1.26.3-00
+
 error:
 	exit 1
 
 create-cluster: create-master create-worker generate-kubeconfig join-worker install-cni
 
 create-master:
-	multipass launch 22.04 --name $(MASTER_INSTANCE) -c 2 -m 1G -d 10G --cloud-init cloud-init-master.yaml
+	cat cloud-init-master.yaml | sed "s/__KUBERNETES_VERSION__/$(KUBERNETES_VERSION)/" | multipass launch 22.04 --name $(MASTER_INSTANCE) -c 2 -m 1G -d 10G --cloud-init -
 
 create-worker:
-	multipass launch 22.04 --name $(WORKER_INSTANCE) -c 2 -m 1G -d 10G --cloud-init cloud-init-worker.yaml
+	cat cloud-init-worker.yaml | sed "s/__KUBERNETES_VERSION__/$(KUBERNETES_VERSION)/" | multipass launch 22.04 --name $(WORKER_INSTANCE) -c 2 -m 1G -d 10G --cloud-init -
 
 join-worker:
 	$(eval JOIN_COMMAND := $(shell multipass exec $(MASTER_INSTANCE) -- sudo kubeadm token create --print-join-command))
