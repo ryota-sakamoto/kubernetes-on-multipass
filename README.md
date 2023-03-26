@@ -60,8 +60,15 @@ The Makefile provides several variables that can be customized:
 
 These variables can be overridden by setting them in the shell or by editing the Makefile directly.
 
-For example, to create a cluster with Kubernetes version 1.25.8-00 instead of the default version specified in the Makefile, you can run the following command:
+To create a cluster with Kubernetes version 1.25.8-00 instead of the default version specified in the Makefile, you can run the following command:
 
 ```bash
 make create-cluster KUBERNETES_VERSION=1.25.8-00
+```
+
+To create a worker instance with a custom name and join the cluster, you can run the following command:
+
+```bash
+make create-worker WORKER_INSTANCE=worker2
+make join-worker WORKER_INSTANCE=worker2
 ```
