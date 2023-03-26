@@ -5,6 +5,7 @@ packages:
   - apt-transport-https
   - ca-certificates
   - curl
+  - jq
   - [kubelet, 1.26.3-00]
   - [kubeadm, 1.26.3-00]
   - [kubectl, 1.26.3-00]
@@ -101,12 +102,48 @@ write_files:
       serviceSubnet: "172.20.0.0/16"
       podSubnet: "192.168.0.0/16"
       dnsDomain: "cluster.local"
+    apiServer:
+      extraArgs:
+        disable-admission-plugins: CertificateSubjectRestriction
   path: /opt/kubeadm/init.yaml
 - content: |
     #!/bin/sh
     kubeadm init --config /opt/kubeadm/init.yaml
   path: /opt/kubeadm.sh
   permissions: "0755"
+- content: |
+    #!/bin/sh
+    openssl genrsa -out admin.pem 2048
+    openssl req -new -key admin.pem -out admin.csr -subj "/O=system:masters/CN=admin"
+    CSR=$(cat admin.csr | base64 | tr -d "\n")
+    sed "s/__CSR__/${CSR}/" /opt/csr.yaml > /tmp/csr.yaml
+
+    sudo KUBECONFIG=/etc/kubernetes/admin.conf kubectl delete -f /tmp/csr.yaml
+    sudo KUBECONFIG=/etc/kubernetes/admin.conf kubectl apply -f /tmp/csr.yaml
+    sudo KUBECONFIG=/etc/kubernetes/admin.conf kubectl certificate approve admin
+    sudo KUBECONFIG=/etc/kubernetes/admin.conf kubectl get csr admin -o json | jq -r .status.certificate | base64 --decode > admin.crt
+
+    kubectl config set-cluster kubenertes --certificate-authority=/etc/kubernetes/pki/ca.crt --embed-certs --server=https://localhost:6443
+    kubectl config set-credentials admin --client-certificate=admin.crt --client-key=admin.pem --embed-certs=true
+    kubectl config set-context kubenertes --cluster=kubenertes --user=admin
+    kubectl config use-context kubenertes
+  path: /opt/csr.sh
+  permissions: "0755"
+- content: |
+    apiVersion: certificates.k8s.io/v1
+    kind: CertificateSigningRequest
+    metadata:
+      name: admin
+    spec:
+      signerName: kubernetes.io/kube-apiserver-client
+      groups:
+        - system:masters
+      request: __CSR__
+      usages:
+      - digital signature
+      - key encipherment
+      - client auth
+  path: /opt/csr.yaml
 
 runcmd:
 - modprobe -a overlay br_netfilter
