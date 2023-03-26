@@ -33,6 +33,6 @@ install-cni:
 	helm install cilium cilium/cilium --version 1.13.1 --namespace kube-system --set ipam.mode=kubernetes
 
 clean:
-	multipass delete $(WORKER_INSTANCE)
-	multipass delete $(MASTER_INSTANCE)
-	multipass purge
+	-multipass delete $(WORKER_INSTANCE)
+	-multipass delete $(MASTER_INSTANCE)
+	-multipass purge
