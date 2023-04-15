@@ -5,7 +5,7 @@ WORKER_INSTANCE := worker
 MASTER_INSTANCE_NAME := $(INSTANCE_NAME_PREFIX)$(MASTER_INSTANCE)
 WORKER_INSTANCE_NAME := $(INSTANCE_NAME_PREFIX)$(WORKER_INSTANCE)
 
-KUBERNETES_VERSION := 1.26.3-00
+KUBERNETES_VERSION := 1.27.1-00
 
 error:
 	exit 1
@@ -41,3 +41,7 @@ install-cni:
 clean:
 	-multipass list --format json | jq -r .list[].name | grep "$(INSTANCE_NAME_PREFIX)" | xargs multipass delete
 	-multipass purge
+
+update-kubernetes-version:
+	$(eval LATEST_VRESION := $(shell curl -s -H "Accept: application/vnd.github+json" https://api.github.com/repos/kubernetes/kubernetes/releases/latest | jq -r .tag_name | sed "s/v//"))
+	sed -i "s/${KUBERNETES_VERSION}/${LATEST_VRESION}-00/" Makefile README.md
