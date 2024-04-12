@@ -5,15 +5,19 @@ packages:
   - apt-transport-https
   - ca-certificates
   - curl
+  - gpg
   - jq
   - [kubelet, __KUBERNETES_VERSION__]
   - [kubeadm, __KUBERNETES_VERSION__]
   - [kubectl, __KUBERNETES_VERSION__]
 
+bootcmd:
+  - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
 apt:
   sources:
     kubernetes.list:
-      source: "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main"
+      source: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /"
 
 write_files:
 - content: |
