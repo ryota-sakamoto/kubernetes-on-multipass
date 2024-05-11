@@ -108,6 +108,7 @@ write_files:
     ---
     apiVersion: kubeadm.k8s.io/v1beta3
     kind: ClusterConfiguration
+    kubernetesVersion: __KUBERNETES_VERSION__
     networking:
       serviceSubnet: "172.20.0.0/16"
       podSubnet: "192.168.0.0/16"
