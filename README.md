@@ -60,14 +60,14 @@ The Makefile provides several variables that can be customized:
 | MASTER_INSTANCE | Name of the master instance | master |
 | WORKER_INSTANCE | Name of the worker instance | worker |
 | INSTANCE_NAME_PREFIX | Prefix to be used for the instance names | kubernetes- |
-| KUBERNETES_VERSION | Version of Kubernetes to install | 1.27.1-00 |
+| KUBERNETES_VERSION | Version of Kubernetes to install | v1.30.0 |
 
 These variables can be overridden by setting them in the shell or by editing the Makefile directly.
 
-To create a cluster with Kubernetes version 1.25.8-00 instead of the default version specified in the Makefile, you can run the following command:
+To create a cluster with Kubernetes version v1.27.1 instead of the default version specified in the Makefile, you can run the following command:
 
 ```bash
-make create-cluster KUBERNETES_VERSION=1.25.8-00
+make create-cluster KUBERNETES_VERSION=v1.27.1
 ```
 
 To create a worker instance with a custom name and join the cluster, you can run the following command:
