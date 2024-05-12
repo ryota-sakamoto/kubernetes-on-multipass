@@ -61,7 +61,8 @@ The Makefile provides several variables that can be customized:
 | WORKER_INSTANCE | Name of the worker instance | worker |
 | INSTANCE_NAME_PREFIX | Prefix to be used for the instance names | kubernetes- |
 | CPU | CPU count of the instance | 2 |
-| MEMORY | memory of the instance | 2G |
+| MEMORY | Memory of the instance | 2G |
+| DISK | Disk size of the instance | 10G |
 | KUBERNETES_VERSION | Version of Kubernetes to install | v1.30.0 |
 
 These variables can be overridden by setting them in the shell or by editing the Makefile directly.

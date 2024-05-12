@@ -7,6 +7,7 @@ WORKER_INSTANCE_NAME := $(INSTANCE_NAME_PREFIX)$(WORKER_INSTANCE)
 
 CPU := 2
 MEMORY := 2G
+DISK := 10G
 
 KUBERNETES_VERSION := v1.30.0
 
@@ -21,10 +22,10 @@ error:
 create-cluster: create-master create-worker generate-kubeconfig join-worker install-cni
 
 create-master:
-	cat cloud-init-master.yaml | sed "s/__KUBERNETES_VERSION__/$(KUBERNETES_VERSION)/" | sed "s/__ARCH__/$(ARCH)/" | multipass launch 22.04 --name $(MASTER_INSTANCE_NAME) -c $(CPU) -m $(MEMORY) -d 10G --cloud-init -
+	cat cloud-init-master.yaml | sed "s/__KUBERNETES_VERSION__/$(KUBERNETES_VERSION)/" | sed "s/__ARCH__/$(ARCH)/" | multipass launch 22.04 --name $(MASTER_INSTANCE_NAME) -c $(CPU) -m $(MEMORY) -d $(DISK) --cloud-init -
 
 create-worker:
-	cat cloud-init-worker.yaml | sed "s/__KUBERNETES_VERSION__/$(KUBERNETES_VERSION)/" | sed "s/__ARCH__/$(ARCH)/" | multipass launch 22.04 --name $(WORKER_INSTANCE_NAME) -c $(CPU) -m $(MEMORY) -d 10G --cloud-init -
+	cat cloud-init-worker.yaml | sed "s/__KUBERNETES_VERSION__/$(KUBERNETES_VERSION)/" | sed "s/__ARCH__/$(ARCH)/" | multipass launch 22.04 --name $(WORKER_INSTANCE_NAME) -c $(CPU) -m $(MEMORY) -d $(DISK) --cloud-init -
 
 join-worker:
 	$(eval JOIN_COMMAND := $(shell multipass exec $(MASTER_INSTANCE_NAME) -- sudo kubeadm token create --print-join-command))
