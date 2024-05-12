@@ -28,6 +28,7 @@ shell-master:
 generate-kubeconfig:
 	multipass exec $(MASTER_INSTANCE_NAME) -- /opt/csr.sh
 	multipass transfer $(MASTER_INSTANCE_NAME):/home/ubuntu/.kube/config .
+	mkdir -p ~/.kube
 	KUBECONFIG=config:~/.kube/config kubectl config view --flatten > ~/.kube/config
 	rm config
 
