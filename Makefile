@@ -7,16 +7,21 @@ WORKER_INSTANCE_NAME := $(INSTANCE_NAME_PREFIX)$(WORKER_INSTANCE)
 
 KUBERNETES_VERSION := v1.30.0
 
+ARCH := amd64
+ifeq ($(shell uname -m),aarch64)
+	ARCH := arm64
+endif
+
 error:
 	exit 1
 
 create-cluster: create-master create-worker generate-kubeconfig join-worker install-cni
 
 create-master:
-	cat cloud-init-master.yaml | sed "s/__KUBERNETES_VERSION__/$(KUBERNETES_VERSION)/" | multipass launch 22.04 --name $(MASTER_INSTANCE_NAME) -c 2 -m 1G -d 10G --cloud-init -
+	cat cloud-init-master.yaml | sed "s/__KUBERNETES_VERSION__/$(KUBERNETES_VERSION)/" | sed "s/__ARCH__/$(ARCH)/" | multipass launch 22.04 --name $(MASTER_INSTANCE_NAME) -c 2 -m 1G -d 10G --cloud-init -
 
 create-worker:
-	cat cloud-init-worker.yaml | sed "s/__KUBERNETES_VERSION__/$(KUBERNETES_VERSION)/" | multipass launch 22.04 --name $(WORKER_INSTANCE_NAME) -c 2 -m 1G -d 10G --cloud-init -
+	cat cloud-init-worker.yaml | sed "s/__KUBERNETES_VERSION__/$(KUBERNETES_VERSION)/" | sed "s/__ARCH__/$(ARCH)/" | multipass launch 22.04 --name $(WORKER_INSTANCE_NAME) -c 2 -m 1G -d 10G --cloud-init -
 
 join-worker:
 	$(eval JOIN_COMMAND := $(shell multipass exec $(MASTER_INSTANCE_NAME) -- sudo kubeadm token create --print-join-command))

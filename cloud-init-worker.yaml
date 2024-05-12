@@ -24,9 +24,9 @@ write_files:
     cd /usr/bin
 
     CRICTL_VERSION="v1.28.0"
-    curl -L "https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-linux-amd64.tar.gz" | sudo tar -C /usr/bin -xz
+    curl -L "https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-linux-__ARCH__.tar.gz" | sudo tar -C /usr/bin -xz
 
-    sudo curl -L --remote-name-all https://dl.k8s.io/release/__KUBERNETES_VERSION__/bin/linux/amd64/{kubeadm,kubelet,kubectl} -O
+    sudo curl -L --remote-name-all https://dl.k8s.io/release/__KUBERNETES_VERSION__/bin/linux/__ARCH__/{kubeadm,kubelet,kubectl} -O
     sudo chmod +x {kubeadm,kubelet,kubectl}
 
     RELEASE_VERSION="v0.16.2"
@@ -37,8 +37,8 @@ write_files:
   permissions: "0755"
 - content: |
     #!/bin/sh
-    wget https://github.com/containerd/containerd/releases/download/v1.7.0/containerd-1.7.0-linux-amd64.tar.gz
-    tar Cxzvf /usr/local containerd-1.7.0-linux-amd64.tar.gz
+    wget https://github.com/containerd/containerd/releases/download/v1.7.0/containerd-1.7.0-linux-__ARCH__.tar.gz
+    tar Cxzvf /usr/local containerd-1.7.0-linux-__ARCH__.tar.gz
 
     wget https://raw.githubusercontent.com/containerd/containerd/v1.7.0/containerd.service
     mv containerd.service /etc/systemd/system/containerd.service
@@ -59,15 +59,15 @@ write_files:
   path: /etc/containerd/config.toml
 - content: |
     #!/bin/sh
-    wget https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.amd64
-    install -m 755 runc.amd64 /usr/local/sbin/runc
+    wget https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.__ARCH__
+    install -m 755 runc.__ARCH__ /usr/local/sbin/runc
   path: /opt/runc.sh
   permissions: "0755"
 - content: |
     #!/bin/sh
-    wget https://github.com/containernetworking/plugins/releases/download/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz
+    wget https://github.com/containernetworking/plugins/releases/download/v1.2.0/cni-plugins-linux-__ARCH__-v1.2.0.tgz
     mkdir -p /opt/cni/bin
-    tar Cxzvf /opt/cni/bin cni-plugins-linux-amd64-v1.2.0.tgz
+    tar Cxzvf /opt/cni/bin cni-plugins-linux-__ARCH__-v1.2.0.tgz
   path: /opt/cni.sh
   permissions: "0755"
 - content: |
