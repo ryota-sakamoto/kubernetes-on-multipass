@@ -22,6 +22,13 @@ make create-cluster
 
 This will launch two Multipass instances, master and worker, and generate a Kubernetes configuration file. It will then join the worker to the cluster and install the Cilium CNI using Helm.
 
+```bash
+$ kubectl get node -o wide
+NAME                STATUS   ROLES           AGE   VERSION   INTERNAL-IP    EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION       CONTAINER-RUNTIME
+kubernetes-master   Ready    control-plane   29m   v1.30.0   10.81.43.68    <none>        Ubuntu 22.04.4 LTS   5.15.0-105-generic   containerd://1.7.0
+kubernetes-worker   Ready    <none>          16m   v1.30.0   10.81.43.118   <none>        Ubuntu 22.04.4 LTS   5.15.0-105-generic   containerd://1.7.0
+```
+
 You can also run each target separately using the following commands:
 
 ```bash
