@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/ryota-sakamoto/kubernetes-on-multipass/pkg/provisoner"
+	"github.com/ryota-sakamoto/kubernetes-on-multipass/pkg/provisioner"
 )
 
 var createCmd = &cobra.Command{
@@ -18,7 +18,7 @@ var createMasterCmd = &cobra.Command{
 	Use:   "master",
 	Short: "Create a new master",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return provisoner.CreateMaster(getProvisonerConfig(cmd))
+		return provisioner.CreateMaster(getProvisionerConfig(cmd))
 	},
 }
 
@@ -26,12 +26,12 @@ var createWorkerCmd = &cobra.Command{
 	Use:   "worker",
 	Short: "Create a new worker",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return provisoner.CreateWorker(getProvisonerConfig(cmd))
+		return provisioner.CreateWorker(getProvisionerConfig(cmd))
 	},
 }
 
-func getProvisonerConfig(cmd *cobra.Command) provisoner.Config {
-	return provisoner.Config{
+func getProvisionerConfig(cmd *cobra.Command) provisioner.Config {
+	return provisioner.Config{
 		Name:       cmd.Flag("prefix").Value.String() + cmd.Flag("name").Value.String(),
 		CPUs:       cmd.Flag("cpus").Value.String(),
 		Memory:     cmd.Flag("memory").Value.String(),

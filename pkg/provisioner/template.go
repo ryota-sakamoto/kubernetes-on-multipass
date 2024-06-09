@@ -1,4 +1,4 @@
-package provisoner
+package provisioner
 
 import "github.com/ryota-sakamoto/kubernetes-on-multipass/pkg/cloudinit"
 
