@@ -5,8 +5,10 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "kom",
-	Short: "kom is a CLI tool to deploy Kubernetes on Multipass",
+	Use:           "kom",
+	Short:         "kom is a CLI tool to deploy Kubernetes on Multipass",
+	SilenceUsage:  true,
+	SilenceErrors: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

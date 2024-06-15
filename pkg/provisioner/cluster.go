@@ -2,6 +2,7 @@ package provisioner
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/goccy/go-yaml"
@@ -25,7 +26,7 @@ type Config struct {
 func CreateMaster(config Config) error {
 	instance, err := multipass.GetInstance(config.Name)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get instance: %w", err)
 	}
 	if instance != nil {
 		return nil
@@ -36,7 +37,7 @@ func CreateMaster(config Config) error {
 		"Arch":              "amd64",
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to generate cloud-init template: %w", err)
 	}
 
 	return multipass.LaunchInstance(multipass.InstanceConfig{
@@ -51,7 +52,7 @@ func CreateMaster(config Config) error {
 func CreateWorker(config Config) error {
 	instance, err := multipass.GetInstance(config.Name)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get instance: %w", err)
 	}
 	if instance != nil {
 		return nil
@@ -62,7 +63,7 @@ func CreateWorker(config Config) error {
 		"Arch":              "amd64",
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to generate cloud-init template: %w", err)
 	}
 
 	return multipass.LaunchInstance(multipass.InstanceConfig{
@@ -75,52 +76,59 @@ func CreateWorker(config Config) error {
 }
 
 func GenerateKubeconfig(name string) error {
+	slog.Debug("generate kubeconfig", slog.String("name", name))
+
 	instance, err := multipass.GetInstance(name)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get instance: %w", err)
+	}
+
+	slog.Debug("get instance", slog.Any("instance", instance))
+	if instance == nil {
+		return fmt.Errorf("instance not found: %s", name)
 	}
 
 	err = multipass.Exec(name, "/opt/csr.sh")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to execute csr.sh: %w", err)
 	}
 
 	tempDir, err := os.MkdirTemp("", "kom")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create temporary directory: %w", err)
 	}
 	defer os.RemoveAll(tempDir)
 
 	err = multipass.Transfer(name, "/home/ubuntu/.kube/config", tempDir)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to transfer kubeconfig file: %w", err)
 	}
 
 	kubeDir := os.Getenv("HOME") + "/.kube"
 	err = os.MkdirAll(kubeDir, 0755)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create .kube directory: %w", err)
 	}
 
 	mergedConfig, err := kubernetes.MergeKubeconfig([]string{kubeDir + "/config", tempDir + "/config"})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to merge kubeconfig files: %w", err)
 	}
 
 	mergedConfig.Clusters["kubernetes"].Server = fmt.Sprintf("https://%s:6443", instance.Ipv4[0])
 
 	json, err := runtime.Encode(clientcmdlatest.Codec, mergedConfig)
 	if err != nil {
-		return nil
+		return fmt.Errorf("failed to encode kubeconfig to JSON: %w", err)
 	}
 	output, err := yaml.JSONToYAML(json)
 	if err != nil {
-		fmt.Printf("Unexpected error: %v", err)
+		return fmt.Errorf("failed to convert JSON to YAML: %w", err)
 	}
 
 	err = os.WriteFile(kubeDir+"/config", output, 0644)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to write kubeconfig file: %w", err)
 	}
 
 	return nil
