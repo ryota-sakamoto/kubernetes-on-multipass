@@ -61,3 +61,20 @@ func LaunchInstance(config InstanceConfig, cloudinit string) error {
 	_, err := cmd.Output()
 	return err
 }
+
+func Exec(name string, command string) error {
+	args := []string{"exec", name, "--"}
+	args = append(args, strings.Fields(command)...)
+
+	cmd := exec.Command("multipass", args...)
+	_, err := cmd.Output()
+	return err
+}
+
+func Transfer(name string, from string, to string) error {
+	args := []string{"transfer", name + ":" + from, to}
+
+	cmd := exec.Command("multipass", args...)
+	_, err := cmd.Output()
+	return err
+}
