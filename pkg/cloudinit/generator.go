@@ -2,7 +2,6 @@ package cloudinit
 
 import (
 	"bytes"
-	"fmt"
 	"text/template"
 
 	"github.com/goccy/go-yaml"
@@ -26,17 +25,18 @@ func Generate(c Config, vars map[string]string) (string, error) {
 		return "", err
 	}
 
-	temp, err := template.New("cloud-config").Parse(buff.String())
+	temp, err := template.New("cloud-config").Parse(`#cloud-config
+package_update: true
+
+` + buff.String())
 	if err != nil {
 		return "", err
 	}
 
-	if err := temp.Execute(buff, vars); err != nil {
+	output := &bytes.Buffer{}
+	if err := temp.Execute(output, vars); err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf(`#cloud-config
-package_update: true
-
-%s`, buff.String()), nil
+	return output.String(), nil
 }
