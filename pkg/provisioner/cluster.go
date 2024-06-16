@@ -14,7 +14,6 @@ import (
 )
 
 type ClusterConfig struct {
-	Name string
 }
 
 type InstanceConfig struct {
@@ -27,10 +26,24 @@ type InstanceConfig struct {
 	IsJoinCluster bool
 }
 
-func CreateCluster(clusterName string, config ClusterConfig) error {
-	slog.Debug("create cluster", slog.String("clusterName", clusterName), slog.Any("config", config))
+func CreateCluster(clusterName string, clusterConfig ClusterConfig, masterConfig InstanceConfig, workerConfig InstanceConfig) error {
+	slog.Debug("create cluster", slog.String("clusterName", clusterName),
+		slog.Any("clusterConfig", clusterConfig),
+		slog.Any("masterConfig", masterConfig),
+		slog.Any("workerConfig", workerConfig),
+	)
 
-	return nil
+	err := CreateMaster(clusterName, masterConfig)
+	if err != nil {
+		return fmt.Errorf("failed to create master: %w", err)
+	}
+
+	err = CreateWorker(clusterName, workerConfig)
+	if err != nil {
+		return fmt.Errorf("failed to create worker: %w", err)
+	}
+
+	return GenerateKubeconfig(clusterName + "-master")
 }
 
 func CreateMaster(clusterName string, config InstanceConfig) error {
