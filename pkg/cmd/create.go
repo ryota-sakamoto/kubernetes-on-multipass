@@ -23,13 +23,16 @@ var createWorkerCmd = &cobra.Command{
 }
 
 func getProvisionerConfig(cmd *cobra.Command) provisioner.Config {
+	join, _ := cmd.Flags().GetBool("join")
+
 	return provisioner.Config{
-		Name:       cmd.Flag("name").Value.String(),
-		CPUs:       cmd.Flag("cpus").Value.String(),
-		Memory:     cmd.Flag("memory").Value.String(),
-		Disk:       cmd.Flag("disk").Value.String(),
-		K8sVersion: cmd.Flag("k8s-version").Value.String(),
-		Image:      cmd.Flag("image").Value.String(),
+		Name:          cmd.Flag("name").Value.String(),
+		CPUs:          cmd.Flag("cpus").Value.String(),
+		Memory:        cmd.Flag("memory").Value.String(),
+		Disk:          cmd.Flag("disk").Value.String(),
+		K8sVersion:    cmd.Flag("k8s-version").Value.String(),
+		Image:         cmd.Flag("image").Value.String(),
+		IsJoinCluster: join,
 	}
 }
 
@@ -42,6 +45,7 @@ func defineCommonFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP("disk", "d", "10G", "Amount of disk space")
 	cmd.Flags().StringP("k8s-version", "k", "v1.30.0", "Kubernetes version")
 	cmd.Flags().StringP("image", "i", "22.04", "Image to use for the VM")
+	cmd.Flags().BoolP("join", "j", true, "Join the cluster")
 }
 
 func init() {

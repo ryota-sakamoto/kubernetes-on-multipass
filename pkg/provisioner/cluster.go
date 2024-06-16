@@ -9,86 +9,62 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	clientcmdlatest "k8s.io/client-go/tools/clientcmd/api/latest"
 
-	"github.com/ryota-sakamoto/kubernetes-on-multipass/pkg/cloudinit"
 	"github.com/ryota-sakamoto/kubernetes-on-multipass/pkg/kubernetes"
 	"github.com/ryota-sakamoto/kubernetes-on-multipass/pkg/multipass"
 )
 
 type Config struct {
-	Name       string
-	CPUs       string
-	Memory     string
-	Disk       string
-	K8sVersion string
-	Image      string
+	Name          string
+	CPUs          string
+	Memory        string
+	Disk          string
+	K8sVersion    string
+	Image         string
+	IsJoinCluster bool
 }
 
 func CreateMaster(clusterName string, config Config) error {
 	slog.Debug("create master", slog.String("clusterName", clusterName), slog.Any("config", config))
 
-	instanceName := fmt.Sprintf("%s-%s", clusterName, "master")
-	instance, err := multipass.GetInstance(instanceName)
+	config.Name = "master"
+	_, err := LaunchInstance(clusterName, config, GetMasterTemplate())
 	if err != nil {
-		return fmt.Errorf("failed to get instance: %w", err)
+		return fmt.Errorf("failed to launch instance: %w", err)
 	}
 
-	slog.Debug("get instance", slog.String("instanceName", instanceName), slog.Any("instance", instance))
-	if instance != nil {
-		return nil
-	}
-
-	template, err := cloudinit.Generate(GetMasterTemplate(), map[string]string{
-		"KubernetesVersion": config.K8sVersion,
-		"Arch":              "amd64",
-	})
-	if err != nil {
-		return fmt.Errorf("failed to generate cloud-init template: %w", err)
-	}
-
-	return multipass.LaunchInstance(multipass.InstanceConfig{
-		Name:   instanceName,
-		CPUs:   config.CPUs,
-		Memory: config.Memory,
-		Disk:   config.Disk,
-		Image:  config.Image,
-	}, template)
+	return nil
 }
 
 func CreateWorker(clusterName string, config Config) error {
 	slog.Debug("create worker", slog.String("clusterName", clusterName), slog.Any("config", config))
 
-	name := config.Name
-	if name == "" {
-		name = GetRandomName()
-	}
-
-	instanceName := fmt.Sprintf("%s-%s", clusterName, name)
-
-	instance, err := multipass.GetInstance(instanceName)
+	instanceName, err := LaunchInstance(clusterName, config, GetWorkerTemplate())
 	if err != nil {
-		return fmt.Errorf("failed to get instance: %w", err)
+		return fmt.Errorf("failed to launch instance: %w", err)
 	}
 
-	slog.Debug("get instance", slog.String("instanceName", instanceName), slog.Any("instance", instance))
-	if instance != nil {
-		return nil
+	if config.IsJoinCluster {
+		return JoinCluster(clusterName, instanceName)
 	}
 
-	template, err := cloudinit.Generate(GetWorkerTemplate(), map[string]string{
-		"KubernetesVersion": config.K8sVersion,
-		"Arch":              "amd64",
-	})
+	return nil
+}
+
+func JoinCluster(clusterName, name string) error {
+	slog.Debug("join cluster", slog.String("clusterName", clusterName), slog.String("name", name))
+
+	masterName := clusterName + "-master"
+	joinCommand, err := multipass.Exec(masterName, "sudo kubeadm token create --print-join-command")
 	if err != nil {
-		return fmt.Errorf("failed to generate cloud-init template: %w", err)
+		return fmt.Errorf("failed to get join command: %w", err)
 	}
 
-	return multipass.LaunchInstance(multipass.InstanceConfig{
-		Name:   instanceName,
-		CPUs:   config.CPUs,
-		Memory: config.Memory,
-		Disk:   config.Disk,
-		Image:  config.Image,
-	}, template)
+	_, err = multipass.Exec(name, fmt.Sprintf("sudo %s", joinCommand))
+	if err != nil {
+		return fmt.Errorf("failed to join cluster: %w", err)
+	}
+
+	return nil
 }
 
 func GenerateKubeconfig(name string) error {
@@ -104,7 +80,7 @@ func GenerateKubeconfig(name string) error {
 		return fmt.Errorf("instance not found: %s", name)
 	}
 
-	err = multipass.Exec(name, "/opt/csr.sh")
+	_, err = multipass.Exec(name, "/opt/csr.sh")
 	if err != nil {
 		return fmt.Errorf("failed to execute csr.sh: %w", err)
 	}
