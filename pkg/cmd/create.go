@@ -14,25 +14,17 @@ var createCmd = &cobra.Command{
 	},
 }
 
-var createMasterCmd = &cobra.Command{
-	Use:   "master",
-	Short: "Create a new master",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return provisioner.CreateMaster(getProvisionerConfig(cmd))
-	},
-}
-
 var createWorkerCmd = &cobra.Command{
 	Use:   "worker",
-	Short: "Create a new worker",
+	Short: "Create a new worker node",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return provisioner.CreateWorker(getProvisionerConfig(cmd))
+		return provisioner.CreateWorker(cmd.Flag("cluster-name").Value.String(), getProvisionerConfig(cmd))
 	},
 }
 
 func getProvisionerConfig(cmd *cobra.Command) provisioner.Config {
 	return provisioner.Config{
-		Name:       cmd.Flag("prefix").Value.String() + cmd.Flag("name").Value.String(),
+		Name:       cmd.Flag("name").Value.String(),
 		CPUs:       cmd.Flag("cpus").Value.String(),
 		Memory:     cmd.Flag("memory").Value.String(),
 		Disk:       cmd.Flag("disk").Value.String(),
@@ -41,21 +33,19 @@ func getProvisionerConfig(cmd *cobra.Command) provisioner.Config {
 	}
 }
 
-func defineCommonFlags(cmd *cobra.Command, name string) {
-	cmd.Flags().StringP("prefix", "p", "kubernetes-", "Prefix for the instance")
-	cmd.Flags().StringP("name", "n", name, "Name of the instance")
+func defineCommonFlags(cmd *cobra.Command) {
+	cmd.Flags().StringP("cluster-name", "", "kubernetes", "Name of the cluster")
+
+	cmd.Flags().StringP("name", "n", "", "Name of the instance. If not provided, a random name will be generated")
 	cmd.Flags().StringP("cpus", "c", "2", "Number of CPUs")
 	cmd.Flags().StringP("memory", "m", "4G", "Amount of memory")
 	cmd.Flags().StringP("disk", "d", "10G", "Amount of disk space")
 	cmd.Flags().StringP("k8s-version", "k", "v1.30.0", "Kubernetes version")
 	cmd.Flags().StringP("image", "i", "22.04", "Image to use for the VM")
-
 }
 
 func init() {
 	rootCmd.AddCommand(createCmd)
-	createCmd.AddCommand(createMasterCmd)
 	createCmd.AddCommand(createWorkerCmd)
-	defineCommonFlags(createMasterCmd, "master")
-	defineCommonFlags(createWorkerCmd, "worker")
+	defineCommonFlags(createWorkerCmd)
 }

@@ -23,8 +23,9 @@ type Config struct {
 	Image      string
 }
 
-func CreateMaster(config Config) error {
-	instance, err := multipass.GetInstance(config.Name)
+func CreateMaster(clusterName string, config Config) error {
+	instanceName := fmt.Sprintf("%s-%s", clusterName, "master")
+	instance, err := multipass.GetInstance(instanceName)
 	if err != nil {
 		return fmt.Errorf("failed to get instance: %w", err)
 	}
@@ -41,7 +42,7 @@ func CreateMaster(config Config) error {
 	}
 
 	return multipass.LaunchInstance(multipass.InstanceConfig{
-		Name:   config.Name,
+		Name:   instanceName,
 		CPUs:   config.CPUs,
 		Memory: config.Memory,
 		Disk:   config.Disk,
@@ -49,8 +50,14 @@ func CreateMaster(config Config) error {
 	}, template)
 }
 
-func CreateWorker(config Config) error {
-	instance, err := multipass.GetInstance(config.Name)
+func CreateWorker(clusterName string, config Config) error {
+	name := config.Name
+	if name == "" {
+		name = GetRandomName()
+	}
+
+	instanceName := fmt.Sprintf("%s-%s", clusterName, name)
+	instance, err := multipass.GetInstance(instanceName)
 	if err != nil {
 		return fmt.Errorf("failed to get instance: %w", err)
 	}
@@ -67,7 +74,7 @@ func CreateWorker(config Config) error {
 	}
 
 	return multipass.LaunchInstance(multipass.InstanceConfig{
-		Name:   config.Name,
+		Name:   instanceName,
 		CPUs:   config.CPUs,
 		Memory: config.Memory,
 		Disk:   config.Disk,
