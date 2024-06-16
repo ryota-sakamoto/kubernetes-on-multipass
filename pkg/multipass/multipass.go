@@ -62,6 +62,24 @@ func LaunchInstance(config InstanceConfig, cloudinit string) error {
 	return err
 }
 
+func DeleteInstance(name string) error {
+	_, err := exec.Command("multipass", "delete", name).Output()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func Purge() error {
+	_, err := exec.Command("multipass", "purge").Output()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func Exec(name string, command string) (string, error) {
 	args := []string{"exec", name, "--"}
 	args = append(args, strings.Fields(command)...)

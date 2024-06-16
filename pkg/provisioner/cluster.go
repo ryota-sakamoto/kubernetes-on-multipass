@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 
 	"github.com/goccy/go-yaml"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -147,4 +148,28 @@ func GenerateKubeconfig(name string) error {
 	}
 
 	return nil
+}
+
+func Clean(clusterName string) error {
+	slog.Debug("clean", slog.String("clusterName", clusterName))
+
+	instances, err := multipass.ListInstances()
+	if err != nil {
+		return fmt.Errorf("failed to list instances: %w", err)
+	}
+
+	for _, instance := range instances.List {
+		if !strings.HasPrefix(instance.Name, clusterName) {
+			continue
+		}
+
+		slog.Debug("delete instance", slog.String("name", instance.Name))
+		err := multipass.DeleteInstance(instance.Name)
+		if err != nil {
+			return fmt.Errorf("failed to delete instance: %w", err)
+		}
+	}
+
+	slog.Debug("purge instances")
+	return multipass.Purge()
 }
