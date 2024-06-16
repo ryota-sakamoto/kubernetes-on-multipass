@@ -126,7 +126,7 @@ func GenerateKubeconfig(name string) error {
 		return fmt.Errorf("failed to create .kube directory: %w", err)
 	}
 
-	mergedConfig, err := kubernetes.MergeKubeconfig([]string{kubeDir + "/config", tempDir + "/config"})
+	mergedConfig, err := kubernetes.MergeKubeconfig([]string{tempDir + "/config", kubeDir + "/config"})
 	if err != nil {
 		return fmt.Errorf("failed to merge kubeconfig files: %w", err)
 	}
