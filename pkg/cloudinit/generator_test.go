@@ -28,9 +28,10 @@ func TestGenerate(t *testing.T) {
 		RunCmds: []string{
 			"/use/bin/ok",
 		},
-	}).Generate(map[string]string{
-		"Content": "content",
-	})
+		Vars: map[string]any{
+			"Content": "content",
+		},
+	}).Generate()
 	assert.NoError(t, err)
 
 	expectedResult := `#cloud-config

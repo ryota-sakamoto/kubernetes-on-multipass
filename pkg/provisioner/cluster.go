@@ -18,16 +18,27 @@ type ClusterConfig struct {
 }
 
 type InstanceConfig struct {
-	Name          string
-	CPUs          string
-	Memory        string
-	Disk          string
-	K8sVersion    string
-	Image         string
+	Name       string
+	CPUs       string
+	Memory     string
+	Disk       string
+	K8sVersion string
+	Image      string
+}
+
+type MasterConfig struct {
+	InstanceConfig
+
+	IsRegisterNode bool
+}
+
+type WorkerConfig struct {
+	InstanceConfig
+
 	IsJoinCluster bool
 }
 
-func CreateCluster(clusterName string, clusterConfig ClusterConfig, masterConfig InstanceConfig, workerConfig InstanceConfig) error {
+func CreateCluster(clusterName string, clusterConfig ClusterConfig, masterConfig MasterConfig, workerConfig WorkerConfig) error {
 	slog.Debug("create cluster", slog.String("clusterName", clusterName),
 		slog.Any("clusterConfig", clusterConfig),
 		slog.Any("masterConfig", masterConfig),
@@ -47,11 +58,11 @@ func CreateCluster(clusterName string, clusterConfig ClusterConfig, masterConfig
 	return GenerateKubeconfig(clusterName + "-master")
 }
 
-func CreateMaster(clusterName string, config InstanceConfig) error {
+func CreateMaster(clusterName string, config MasterConfig) error {
 	slog.Debug("create master", slog.String("clusterName", clusterName), slog.Any("config", config))
 
 	config.Name = "master"
-	_, err := LaunchInstance(clusterName, config, GetMasterTemplate())
+	_, err := LaunchInstance(clusterName, config.InstanceConfig, GetMasterTemplate(config.K8sVersion, "amd64", config.IsRegisterNode))
 	if err != nil {
 		return fmt.Errorf("failed to launch instance: %w", err)
 	}
@@ -59,10 +70,10 @@ func CreateMaster(clusterName string, config InstanceConfig) error {
 	return nil
 }
 
-func CreateWorker(clusterName string, config InstanceConfig) error {
+func CreateWorker(clusterName string, config WorkerConfig) error {
 	slog.Debug("create worker", slog.String("clusterName", clusterName), slog.Any("config", config))
 
-	instanceName, err := LaunchInstance(clusterName, config, GetWorkerTemplate())
+	instanceName, err := LaunchInstance(clusterName, config.InstanceConfig, GetWorkerTemplate(config.K8sVersion, "amd64"))
 	if err != nil {
 		return fmt.Errorf("failed to launch instance: %w", err)
 	}

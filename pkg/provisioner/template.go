@@ -104,6 +104,10 @@ nodeRegistration:
     - NumCPU
     - Mem
 ---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+registerNode: {{ .RegisterNode }}
+---
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: ClusterConfiguration
 kubernetesVersion: {{ .KubernetesVersion }}

@@ -26,10 +26,7 @@ func LaunchInstance(clusterName string, config InstanceConfig, cloudinitConfig c
 		return "", fmt.Errorf("instance already exists: %s", instanceName)
 	}
 
-	template, err := cloudinitConfig.Generate(map[string]string{
-		"KubernetesVersion": config.K8sVersion,
-		"Arch":              "amd64",
-	})
+	template, err := cloudinitConfig.Generate()
 	if err != nil {
 		return "", fmt.Errorf("failed to generate cloud-init template: %w", err)
 	}

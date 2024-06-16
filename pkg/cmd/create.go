@@ -28,21 +28,26 @@ var createClusterCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return provisioner.CreateCluster(cmd.Flag("cluster-name").Value.String(),
 			provisioner.ClusterConfig{},
-			provisioner.InstanceConfig{
-				Name:       "master",
-				CPUs:       defaultInstanceCpus,
-				Memory:     defaultInstanceMemory,
-				Disk:       defaultInstanceDisk,
-				K8sVersion: defaultK8sVersion,
-				Image:      defaultInstanceImage,
+			provisioner.MasterConfig{
+				InstanceConfig: provisioner.InstanceConfig{
+					Name:       "master",
+					CPUs:       defaultInstanceCpus,
+					Memory:     defaultInstanceMemory,
+					Disk:       defaultInstanceDisk,
+					K8sVersion: defaultK8sVersion,
+					Image:      defaultInstanceImage,
+				},
+				IsRegisterNode: true,
 			},
-			provisioner.InstanceConfig{
-				Name:          "worker",
-				CPUs:          defaultInstanceCpus,
-				Memory:        defaultInstanceMemory,
-				Disk:          defaultInstanceDisk,
-				K8sVersion:    defaultK8sVersion,
-				Image:         defaultInstanceImage,
+			provisioner.WorkerConfig{
+				InstanceConfig: provisioner.InstanceConfig{
+					Name:       "worker",
+					CPUs:       defaultInstanceCpus,
+					Memory:     defaultInstanceMemory,
+					Disk:       defaultInstanceDisk,
+					K8sVersion: defaultK8sVersion,
+					Image:      defaultInstanceImage,
+				},
 				IsJoinCluster: true,
 			},
 		)
@@ -53,20 +58,22 @@ var createWorkerCmd = &cobra.Command{
 	Use:   "worker",
 	Short: "Create a new worker node",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return provisioner.CreateWorker(cmd.Flag("cluster-name").Value.String(), getProvisionerInstanceConfig(cmd))
+		return provisioner.CreateWorker(cmd.Flag("cluster-name").Value.String(), getWorkerConfig(cmd))
 	},
 }
 
-func getProvisionerInstanceConfig(cmd *cobra.Command) provisioner.InstanceConfig {
+func getWorkerConfig(cmd *cobra.Command) provisioner.WorkerConfig {
 	join, _ := cmd.Flags().GetBool("join")
 
-	return provisioner.InstanceConfig{
-		Name:          cmd.Flag("name").Value.String(),
-		CPUs:          cmd.Flag("cpus").Value.String(),
-		Memory:        cmd.Flag("memory").Value.String(),
-		Disk:          cmd.Flag("disk").Value.String(),
-		K8sVersion:    cmd.Flag("k8s-version").Value.String(),
-		Image:         cmd.Flag("image").Value.String(),
+	return provisioner.WorkerConfig{
+		InstanceConfig: provisioner.InstanceConfig{
+			Name:       cmd.Flag("name").Value.String(),
+			CPUs:       cmd.Flag("cpus").Value.String(),
+			Memory:     cmd.Flag("memory").Value.String(),
+			Disk:       cmd.Flag("disk").Value.String(),
+			K8sVersion: cmd.Flag("k8s-version").Value.String(),
+			Image:      cmd.Flag("image").Value.String(),
+		},
 		IsJoinCluster: join,
 	}
 }

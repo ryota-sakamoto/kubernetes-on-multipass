@@ -11,6 +11,8 @@ type Config struct {
 	Packages   []string    `yaml:"packages"`
 	WriteFiles []WriteFile `yaml:"write_files"`
 	RunCmds    []string    `yaml:"runcmd"`
+
+	Vars map[string]any `yaml:"-"`
 }
 
 type WriteFile struct {
@@ -19,7 +21,7 @@ type WriteFile struct {
 	Permissions string `yaml:"permissions,omitempty"`
 }
 
-func (c *Config) Generate(vars map[string]string) (string, error) {
+func (c *Config) Generate() (string, error) {
 	buff := &bytes.Buffer{}
 	if err := yaml.NewEncoder(buff).Encode(c); err != nil {
 		return "", err
@@ -34,7 +36,7 @@ package_update: true
 	}
 
 	output := &bytes.Buffer{}
-	if err := temp.Execute(output, vars); err != nil {
+	if err := temp.Execute(output, c.Vars); err != nil {
 		return "", err
 	}
 
