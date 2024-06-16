@@ -9,7 +9,7 @@ import (
 )
 
 func TestGenerate(t *testing.T) {
-	result, err := cloudinit.Generate(cloudinit.Config{
+	result, err := (&cloudinit.Config{
 		Packages: []string{
 			"git",
 			"vim",
@@ -28,7 +28,7 @@ func TestGenerate(t *testing.T) {
 		RunCmds: []string{
 			"/use/bin/ok",
 		},
-	}, map[string]string{
+	}).Generate(map[string]string{
 		"Content": "content",
 	})
 	assert.NoError(t, err)

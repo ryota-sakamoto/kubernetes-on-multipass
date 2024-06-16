@@ -19,7 +19,7 @@ type WriteFile struct {
 	Permissions string `yaml:"permissions,omitempty"`
 }
 
-func Generate(c Config, vars map[string]string) (string, error) {
+func (c *Config) Generate(vars map[string]string) (string, error) {
 	buff := &bytes.Buffer{}
 	if err := yaml.NewEncoder(buff).Encode(c); err != nil {
 		return "", err
