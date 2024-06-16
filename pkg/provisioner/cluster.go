@@ -24,11 +24,15 @@ type Config struct {
 }
 
 func CreateMaster(clusterName string, config Config) error {
+	slog.Debug("create master", slog.String("clusterName", clusterName), slog.Any("config", config))
+
 	instanceName := fmt.Sprintf("%s-%s", clusterName, "master")
 	instance, err := multipass.GetInstance(instanceName)
 	if err != nil {
 		return fmt.Errorf("failed to get instance: %w", err)
 	}
+
+	slog.Debug("get instance", slog.String("instanceName", instanceName), slog.Any("instance", instance))
 	if instance != nil {
 		return nil
 	}
@@ -51,16 +55,21 @@ func CreateMaster(clusterName string, config Config) error {
 }
 
 func CreateWorker(clusterName string, config Config) error {
+	slog.Debug("create worker", slog.String("clusterName", clusterName), slog.Any("config", config))
+
 	name := config.Name
 	if name == "" {
 		name = GetRandomName()
 	}
 
 	instanceName := fmt.Sprintf("%s-%s", clusterName, name)
+
 	instance, err := multipass.GetInstance(instanceName)
 	if err != nil {
 		return fmt.Errorf("failed to get instance: %w", err)
 	}
+
+	slog.Debug("get instance", slog.String("instanceName", instanceName), slog.Any("instance", instance))
 	if instance != nil {
 		return nil
 	}
