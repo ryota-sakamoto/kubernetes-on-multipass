@@ -8,7 +8,7 @@ import (
 	"github.com/ryota-sakamoto/kubernetes-on-multipass/pkg/multipass"
 )
 
-func LaunchInstance(clusterName string, config Config, cloudinitConfig cloudinit.Config) (string, error) {
+func LaunchInstance(clusterName string, config InstanceConfig, cloudinitConfig cloudinit.Config) (string, error) {
 	name := config.Name
 	if name == "" {
 		name = GetRandomName()

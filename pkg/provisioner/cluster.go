@@ -13,7 +13,11 @@ import (
 	"github.com/ryota-sakamoto/kubernetes-on-multipass/pkg/multipass"
 )
 
-type Config struct {
+type ClusterConfig struct {
+	Name string
+}
+
+type InstanceConfig struct {
 	Name          string
 	CPUs          string
 	Memory        string
@@ -23,7 +27,13 @@ type Config struct {
 	IsJoinCluster bool
 }
 
-func CreateMaster(clusterName string, config Config) error {
+func CreateCluster(clusterName string, config ClusterConfig) error {
+	slog.Debug("create cluster", slog.String("clusterName", clusterName), slog.Any("config", config))
+
+	return nil
+}
+
+func CreateMaster(clusterName string, config InstanceConfig) error {
 	slog.Debug("create master", slog.String("clusterName", clusterName), slog.Any("config", config))
 
 	config.Name = "master"
@@ -35,7 +45,7 @@ func CreateMaster(clusterName string, config Config) error {
 	return nil
 }
 
-func CreateWorker(clusterName string, config Config) error {
+func CreateWorker(clusterName string, config InstanceConfig) error {
 	slog.Debug("create worker", slog.String("clusterName", clusterName), slog.Any("config", config))
 
 	instanceName, err := LaunchInstance(clusterName, config, GetWorkerTemplate())
