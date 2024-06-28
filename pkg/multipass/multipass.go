@@ -2,6 +2,7 @@ package multipass
 
 import (
 	"encoding/json"
+	"log/slog"
 	"os/exec"
 	"strings"
 )
@@ -17,8 +18,17 @@ type Instance struct {
 	Release string   `json:"release"`
 }
 
+func commandWrapper(command string, args ...string) *exec.Cmd {
+	cmd := exec.Command(command, args...)
+	slog.Debug("execute command", slog.String("command", cmd.String()))
+
+	return cmd
+}
+
 func ListInstances() (*Instances, error) {
-	output, err := exec.Command("multipass", "list", "--format", "json").Output()
+	cmd := commandWrapper("multipass", "list", "--format", "json")
+
+	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +65,7 @@ type InstanceConfig struct {
 }
 
 func LaunchInstance(config InstanceConfig, cloudinit string) error {
-	cmd := exec.Command("multipass", "launch", config.Image, "--name", config.Name, "-c", config.CPUs, "-m", config.Memory, "-d", config.Disk, "--cloud-init", "-")
+	cmd := commandWrapper("multipass", "launch", config.Image, "--name", config.Name, "-c", config.CPUs, "-m", config.Memory, "-d", config.Disk, "--cloud-init", "-")
 	cmd.Stdin = strings.NewReader(cloudinit)
 
 	_, err := cmd.Output()
@@ -63,7 +73,7 @@ func LaunchInstance(config InstanceConfig, cloudinit string) error {
 }
 
 func DeleteInstance(name string) error {
-	_, err := exec.Command("multipass", "delete", name).Output()
+	_, err := commandWrapper("multipass", "delete", name).Output()
 	if err != nil {
 		return err
 	}
@@ -72,7 +82,7 @@ func DeleteInstance(name string) error {
 }
 
 func Purge() error {
-	_, err := exec.Command("multipass", "purge").Output()
+	_, err := commandWrapper("multipass", "purge").Output()
 	if err != nil {
 		return err
 	}
@@ -84,7 +94,7 @@ func Exec(name string, command string) (string, error) {
 	args := []string{"exec", name, "--"}
 	args = append(args, strings.Fields(command)...)
 
-	cmd := exec.Command("multipass", args...)
+	cmd := commandWrapper("multipass", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -96,7 +106,7 @@ func Exec(name string, command string) (string, error) {
 func Transfer(name string, from string, to string) error {
 	args := []string{"transfer", name + ":" + from, to}
 
-	cmd := exec.Command("multipass", args...)
+	cmd := commandWrapper("multipass", args...)
 	_, err := cmd.Output()
 	return err
 }
