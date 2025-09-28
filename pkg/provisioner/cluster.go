@@ -9,6 +9,7 @@ import (
 	"github.com/goccy/go-yaml"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientcmdlatest "k8s.io/client-go/tools/clientcmd/api/latest"
+	"k8s.io/client-go/util/homedir"
 
 	"github.com/ryota-sakamoto/kubernetes-on-multipass/pkg/kubernetes"
 	"github.com/ryota-sakamoto/kubernetes-on-multipass/pkg/multipass"
@@ -55,7 +56,12 @@ func CreateCluster(clusterName string, clusterConfig ClusterConfig, masterConfig
 		return fmt.Errorf("failed to create worker: %w", err)
 	}
 
-	return GenerateKubeconfig(clusterName + "-master")
+	err = GenerateKubeconfig(clusterName + "-master")
+	if err != nil {
+		return fmt.Errorf("failed to generate kubeconfig: %w", err)
+	}
+
+	return InstallCNI(clusterName)
 }
 
 func CreateMaster(clusterName string, config MasterConfig) error {
@@ -183,4 +189,16 @@ func Clean(clusterName string) error {
 
 	slog.Debug("purge instances")
 	return multipass.Purge()
+}
+
+func InstallCNI(clusterName string) error {
+	slog.Debug("install cni", slog.String("clusterName", clusterName))
+
+	kubeconfigPath := homedir.HomeDir() + "/.kube/config"
+	cni, err := kubernetes.NewCNI(kubeconfigPath, clusterName)
+	if err != nil {
+		return fmt.Errorf("failed to create cni client: %w", err)
+	}
+
+	return cni.InstallCilium()
 }
