@@ -9,6 +9,12 @@ Before using this tool, you will need to have the following installed on your ma
 
 - Multipass
 
+## Installation
+
+```bash
+go install github.com/ryota-sakamoto/kubernetes-on-multipass/cmd/kom@latest
+```
+
 ## Usage
 
 To create a Kubernetes cluster on Multipass and install CNI with Helm, simply run the following command:
