@@ -1,17 +1,55 @@
 Kubernetes on Multipass
 ===
 
-This repository contains a Makefile that automates the deployment of a Kubernetes cluster on [Multipass](https://multipass.run/), a lightweight VM manager for Linux, macOS, and Windows. If you want to use previous version of kom, see [manual](./manual).
+This repository contains a CLI that automates the deployment of a Kubernetes cluster on [Multipass](https://multipass.run/), a lightweight VM manager for Linux, macOS, and Windows.
 
 ## Prerequisites
 
-Before using this Makefile, you will need to have the following installed on your machine:
+Before using this tool, you will need to have the following installed on your machine:
 
 - Multipass
-- kubectl
-- jq, a command-line JSON processor
-- Helm
 
 ## Usage
 
-TODO
+To create a Kubernetes cluster on Multipass and install CNI with Helm, simply run the following command:
+
+```bash
+kom create cluster
+```
+
+This will launch two Multipass instances, a master and a worker, and generate a Kubernetes configuration file. It will then join the worker to the cluster and install the Cilium CNI using Helm.
+
+```bash
+$ kubectl get node -o wide
+NAME                STATUS   ROLES           AGE     VERSION   INTERNAL-IP      EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION     CONTAINER-RUNTIME
+kubernetes-master   Ready    control-plane   2m49s   v1.34.0   192.168.205.73   <none>        Ubuntu 24.04.3 LTS   6.8.0-71-generic   containerd://1.7.0
+kubernetes-worker   Ready    <none>          72s     v1.34.0   192.168.205.74   <none>        Ubuntu 24.04.3 LTS   6.8.0-71-generic   containerd://1.7.0
+```
+
+You can also run each command separately:
+
+```bash
+# Launch the worker instances
+kom create worker
+
+# Join the worker to the cluster
+kom join worker
+
+# Generate a Kubernetes configuration file
+kom generate kubeconfig
+
+# Install CNI with Helm
+kom install cni
+```
+
+To open a shell session on the master instance, run:
+
+```bash
+multipass shell kubernetes-master
+```
+
+To clean up the resources, run:
+
+```bash
+kom clean
+```
