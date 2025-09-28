@@ -70,8 +70,8 @@ The Makefile provides several variables that can be customized:
 | CPU | CPU count of the instance | 2 |
 | MEMORY | Memory of the instance | 2G |
 | DISK | Disk size of the instance | 10G |
-| IMAGE | Image of the instance | 22.04 |
-| KUBERNETES_VERSION | Version of Kubernetes to install | v1.30.0 |
+| IMAGE | Image of the instance | 24.04 |
+| KUBERNETES_VERSION | Version of Kubernetes to install | v1.34.0 |
 
 These variables can be overridden by setting them in the shell or by editing the Makefile directly.
 
