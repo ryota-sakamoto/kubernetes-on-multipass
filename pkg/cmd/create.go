@@ -10,8 +10,8 @@ const (
 	defaultInstanceCpus   = "2"
 	defaultInstanceMemory = "4G"
 	defaultInstanceDisk   = "10G"
-	defaultK8sVersion     = "v1.30.0"
-	defaultInstanceImage  = "22.04"
+	defaultK8sVersion     = "v1.34.0"
+	defaultInstanceImage  = "24.04"
 )
 
 var createCmd = &cobra.Command{
