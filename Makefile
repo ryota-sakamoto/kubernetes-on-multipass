@@ -10,7 +10,7 @@ MEMORY := 2G
 DISK := 10G
 IMAGE := 22.04
 
-KUBERNETES_VERSION := v1.30.0
+KUBERNETES_VERSION := v1.34.0
 
 ARCH := amd64
 ifeq ($(shell uname -m),aarch64)
