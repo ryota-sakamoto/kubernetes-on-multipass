@@ -59,3 +59,36 @@ To clean up the resources, run:
 ```bash
 kom clean
 ```
+
+## Shell Completion
+
+kom supports generating shell completion scripts for various shells via cobra.
+
+### Bash
+
+To load completions for the current session:
+
+```bash
+source <(kom completion bash)
+```
+
+To make completions available for all sessions, you can add the completion script to your system's bash completion directory:
+
+```bash
+kom completion bash > /etc/bash_completion.d/kom # Linux
+kom completion bash > /usr/local/etc/bash_completion.d/kom # macOS
+```
+
+### Fish
+
+To load completions for the current session:
+
+```bash
+kom completion fish | source
+```
+
+To make completions available for all sessions, save the completion script to your fish completions directory:
+
+```bash
+kom completion fish > ~/.config/fish/completions/kom.fish
+```
