@@ -38,9 +38,6 @@ You can also run each command separately:
 # Launch the worker instances
 kom create worker
 
-# Join the worker to the cluster
-kom join worker
-
 # Generate a Kubernetes configuration file
 kom generate kubeconfig
 
@@ -48,10 +45,10 @@ kom generate kubeconfig
 kom install cni
 ```
 
-To open a shell session on the master instance, run:
+To run a command on the instance, run:
 
 ```bash
-multipass shell kubernetes-master
+kom exec master -- bash
 ```
 
 To clean up the resources, run:
