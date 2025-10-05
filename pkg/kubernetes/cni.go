@@ -40,7 +40,7 @@ func NewCNI(kubeconfigPath, context string) (*CNI, error) {
 }
 
 func (c *CNI) InstallCilium() error {
-	slog.Debug("installing cilium")
+	slog.Info("Installing Cilium CNI via Helm...")
 
 	install := action.NewInstall(c.actionConfig)
 	install.ReleaseName = ciliumReleaseName
@@ -61,6 +61,6 @@ func (c *CNI) InstallCilium() error {
 		return fmt.Errorf("failed to install chart: %w", err)
 	}
 
-	slog.Info("cilium installed successfully")
+	slog.Info("Cilium installed successfully")
 	return nil
 }

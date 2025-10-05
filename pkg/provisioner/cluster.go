@@ -46,27 +46,35 @@ func CreateCluster(clusterName string, clusterConfig ClusterConfig, masterConfig
 		slog.Any("workerConfig", workerConfig),
 	)
 
+	slog.Info("Creating master node...")
 	err := CreateMaster(clusterName, masterConfig)
 	if err != nil {
 		return fmt.Errorf("failed to create master: %w", err)
 	}
+	slog.Info("Master node created successfully")
 
+	slog.Info("Creating worker node...")
 	err = CreateWorker(clusterName, workerConfig)
 	if err != nil {
 		return fmt.Errorf("failed to create worker: %w", err)
 	}
+	slog.Info("Worker node created successfully")
 
+	slog.Info("Generating kubeconfig...")
 	err = GenerateKubeconfig(clusterName + "-master")
 	if err != nil {
 		return fmt.Errorf("failed to generate kubeconfig: %w", err)
 	}
+	slog.Info("Kubeconfig generated successfully")
 
+	slog.Info("Installing CNI...")
 	return InstallCNI(clusterName)
 }
 
 func CreateMaster(clusterName string, config MasterConfig) error {
 	slog.Debug("create master", slog.String("clusterName", clusterName), slog.Any("config", config))
 
+	slog.Info("Launching master instance...")
 	config.Name = "master"
 	_, err := LaunchInstance(clusterName, config.InstanceConfig, GetMasterTemplate(config.K8sVersion, "amd64", config.IsRegisterNode))
 	if err != nil {
@@ -79,6 +87,7 @@ func CreateMaster(clusterName string, config MasterConfig) error {
 func CreateWorker(clusterName string, config WorkerConfig) error {
 	slog.Debug("create worker", slog.String("clusterName", clusterName), slog.Any("config", config))
 
+	slog.Info("Launching worker instance...")
 	instanceName, err := LaunchInstance(clusterName, config.InstanceConfig, GetWorkerTemplate(config.K8sVersion, "amd64"))
 	if err != nil {
 		return fmt.Errorf("failed to launch instance: %w", err)
@@ -94,6 +103,7 @@ func CreateWorker(clusterName string, config WorkerConfig) error {
 func JoinCluster(clusterName, name string) error {
 	slog.Debug("join cluster", slog.String("clusterName", clusterName), slog.String("name", name))
 
+	slog.Info("Joining worker to the cluster...")
 	masterName := clusterName + "-master"
 	joinCommand, err := multipass.Exec(masterName, "sudo kubeadm token create --print-join-command")
 	if err != nil {
@@ -105,6 +115,7 @@ func JoinCluster(clusterName, name string) error {
 		return fmt.Errorf("failed to join cluster: %w", err)
 	}
 
+	slog.Info("Worker joined cluster successfully")
 	return nil
 }
 
@@ -121,6 +132,7 @@ func GenerateKubeconfig(name string) error {
 		return fmt.Errorf("instance not found: %s", name)
 	}
 
+	slog.Info("Approving CSR...")
 	_, err = multipass.Exec(name, "/opt/csr.sh")
 	if err != nil {
 		return fmt.Errorf("failed to execute csr.sh: %w", err)
@@ -132,11 +144,13 @@ func GenerateKubeconfig(name string) error {
 	}
 	defer os.RemoveAll(tempDir)
 
+	slog.Info("Transferring kubeconfig from master node...")
 	err = multipass.Transfer(name, "/home/ubuntu/.kube/config", tempDir)
 	if err != nil {
 		return fmt.Errorf("failed to transfer kubeconfig file: %w", err)
 	}
 
+	slog.Info("Merging with local kubeconfig...")
 	kubeDir := os.Getenv("HOME") + "/.kube"
 	err = os.MkdirAll(kubeDir, 0755)
 	if err != nil {
@@ -170,6 +184,7 @@ func GenerateKubeconfig(name string) error {
 func Clean(clusterName string) error {
 	slog.Debug("clean", slog.String("clusterName", clusterName))
 
+	slog.Info("Deleting instances for cluster", slog.String("clusterName", clusterName))
 	instances, err := multipass.ListInstances()
 	if err != nil {
 		return fmt.Errorf("failed to list instances: %w", err)
@@ -180,13 +195,14 @@ func Clean(clusterName string) error {
 			continue
 		}
 
-		slog.Debug("delete instance", slog.String("name", instance.Name))
+		slog.Info("Deleting instance", slog.String("name", instance.Name))
 		err := multipass.DeleteInstance(instance.Name)
 		if err != nil {
 			return fmt.Errorf("failed to delete instance: %w", err)
 		}
 	}
 
+	slog.Info("Purging deleted instances...")
 	slog.Debug("purge instances")
 	return multipass.Purge()
 }

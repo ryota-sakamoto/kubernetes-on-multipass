@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -28,6 +29,7 @@ var execCmd = &cobra.Command{
 		}
 
 		instanceName := fmt.Sprintf("%s-%s", clusterName, nodeName)
+		slog.Info("Executing command in instance", slog.String("instance", instanceName), slog.String("command", command))
 		return multipass.ExecInteractive(instanceName, command)
 	},
 }

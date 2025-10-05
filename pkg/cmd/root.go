@@ -3,6 +3,7 @@ package cmd
 import (
 	"log/slog"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -21,9 +22,14 @@ var rootCmd = &cobra.Command{
 			logLevel = slog.LevelDebug
 		}
 
-		slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-			Level: logLevel,
-		})))
+		logFormat, _ := cmd.Flags().GetString("log-format")
+		opts := &slog.HandlerOptions{Level: logLevel}
+
+		if strings.ToLower(logFormat) == "json" {
+			slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, opts)))
+		} else {
+			slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, opts)))
+		}
 	},
 }
 
@@ -32,5 +38,6 @@ func Execute() error {
 }
 
 func init() {
-	rootCmd.PersistentFlags().BoolP("debug", "", false, "Enable debug mode")
+	rootCmd.PersistentFlags().BoolP("debug", "", false, "Enable debug logging")
+	rootCmd.PersistentFlags().String("log-format", "text", "Log format (text, json)")
 }
