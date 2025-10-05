@@ -3,6 +3,7 @@ package multipass
 import (
 	"encoding/json"
 	"log/slog"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -72,6 +73,17 @@ func LaunchInstance(config InstanceConfig, cloudinit string) error {
 	return err
 }
 
+func ExecInteractive(name string, command string) error {
+	execArgs := []string{"exec", name, "--"}
+	execArgs = append(execArgs, strings.Fields(command)...)
+
+	cmd := commandWrapper("multipass", execArgs...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
 func DeleteInstance(name string) error {
 	_, err := commandWrapper("multipass", "delete", name).Output()
 	if err != nil {
@@ -91,10 +103,10 @@ func Purge() error {
 }
 
 func Exec(name string, command string) (string, error) {
-	args := []string{"exec", name, "--"}
-	args = append(args, strings.Fields(command)...)
+	execArgs := []string{"exec", name, "--"}
+	execArgs = append(execArgs, strings.Fields(command)...)
 
-	cmd := commandWrapper("multipass", args...)
+	cmd := commandWrapper("multipass", execArgs...)
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
