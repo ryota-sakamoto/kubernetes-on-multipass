@@ -29,6 +29,14 @@ var execCmd = &cobra.Command{
 		}
 
 		instanceName := fmt.Sprintf("%s-%s", clusterName, nodeName)
+		instance, err := multipass.GetInstance(instanceName)
+		if err != nil {
+			return fmt.Errorf("failed to get instance info: %w", err)
+		}
+		if instance == nil {
+			return fmt.Errorf("instance %q not found", instanceName)
+		}
+
 		slog.Info("Executing command in instance", slog.String("instance", instanceName), slog.String("command", command))
 		return multipass.ExecInteractive(instanceName, command)
 	},
